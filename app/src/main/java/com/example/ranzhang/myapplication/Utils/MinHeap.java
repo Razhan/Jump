@@ -1,27 +1,23 @@
 package com.example.ranzhang.myapplication.Utils;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
 /**
- * Generic class that implements a min-heap.
- *   @author Dave Reed
- *   @version 11/2/12
+ * Created by Ran on 9/17/2015.
  */
-public class MinHeap<E extends Comparable<? super E>>  {
+public class MinHeap<E extends Comparable<? super E>> {
+    private final String TAG = MinHeap.class.getSimpleName();
     private ArrayList<E> values;
+    private int size;
 
-    /**
-     * Constructs an empty heap.
-     */
-    public MinHeap() {
+    public MinHeap(int capacity) {
         this.values = new ArrayList<E>();
+        this.size = capacity;
     }
 
-    /**
-     * Identifies the minimum value stored in the heap
-     *   @return the minimum value
-     */
     public E minValue() {
         if (this.values.size() == 0) {
             throw new NoSuchElementException();
@@ -29,11 +25,18 @@ public class MinHeap<E extends Comparable<? super E>>  {
         return this.values.get(0);
     }
 
-    /**
-     * Adds a new value to the heap.
-     *   @param newValue the value to be added
-     */
     public void add(E newValue) {
+        if (values.size() < size) {
+            addElement(newValue);
+        } else {
+            if (minValue().compareTo(newValue) <= 0) {
+                remove();
+                addElement(newValue);
+            }
+        }
+    }
+
+    private void addElement(E newValue) {
         values.add(newValue);
         int pos = this.values.size()-1;
 
@@ -49,9 +52,6 @@ public class MinHeap<E extends Comparable<? super E>>  {
         this.values.set(pos, newValue);
     }
 
-    /**
-     * Removes the minimum value from the heap.
-     */
     public void remove() {
         E newValue = this.values.remove(this.values.size()-1);
         int pos = 0;
@@ -76,37 +76,12 @@ public class MinHeap<E extends Comparable<? super E>>  {
         }
     }
 
-    /**
-     * Converts the heap into its String representation.
-     *   @return the String representation
-     */
     public String toString() {
         return values.toString();
     }
 
     public int getSize() {
         return values.size();
-    }
-
-
-    public static void main(String[] args) {
-        int[] items = {5, 3, 7, 6, 1, 4, 2, 8};
-
-        MinHeap<Integer> itemHeap = new MinHeap<Integer>();
-        for (int i = 0; i < items.length; i++) {
-            itemHeap.add(items[i]);
-            System.out.print(itemHeap.getSize() + " \n");
-        }
-
-        for (int i = 0; i < items.length; i++) {
-            items[i] = itemHeap.minValue();
-            itemHeap.remove();
-        }
-
-        for (int i : items) {
-            System.out.print(i + " ");
-        }
-        System.out.println();
     }
 
     public void clear() {

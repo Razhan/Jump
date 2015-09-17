@@ -105,8 +105,8 @@ public class LowPassFilterSmoothing
 	{
 		startTime = 0;
 		timestamp = 0;
-		count = 0;
+		count = 1;
 		dt = 0;
-		alpha = 0;
+		alpha = 0.9f;
 	}
 }
