@@ -16,7 +16,7 @@ public class RotatingQueue<T extends Comparable<T>> {
 
     public void insertElement(T element) {
 
-        if(queue.size() > size ) {
+        if(queue.size() >= size ) {
             queue.remove(0);
         }
         queue.add(element);

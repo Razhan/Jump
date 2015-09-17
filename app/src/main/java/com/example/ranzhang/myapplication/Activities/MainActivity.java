@@ -63,7 +63,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
     private RotatingQueue<Pair<Float,Integer>> queue;
 
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -180,7 +179,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         }
     }
 
-
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -196,15 +194,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
                 break;
             default:
                 break;
-        }
-    }
-
-    private void printMinHeap() {
-        int size = minheap.getSize();
-        for (int i = 0; i < size; i++) {
-            Pair<Float, Integer> pair = minheap.minValue();
-            Log.d(TAG, pair.getFirstKey() + " : " + pair.getSecondKey() + "\n");
-            minheap.remove();
         }
     }
 
@@ -236,7 +225,6 @@ public class MainActivity extends Activity implements SensorEventListener, View.
         Collections.sort(res);
         return res;
     }
-
 
     private void clearData() {
         chartbll.clearData();
