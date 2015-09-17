@@ -15,15 +15,21 @@ import android.view.WindowManager;
 import android.widget.Button;
 
 import com.example.ranzhang.myapplication.Business.ChartBLL;
-import com.example.ranzhang.myapplication.Business.MinHeap;
 import com.example.ranzhang.myapplication.Filter.LowPassFilterSmoothing;
 import com.example.ranzhang.myapplication.Filter.MeanFilterSmoothing;
 import com.example.ranzhang.myapplication.Filter.MedianFilterSmoothing;
 import com.example.ranzhang.myapplication.R;
+import com.example.ranzhang.myapplication.Utils.ListUtil;
+import com.example.ranzhang.myapplication.Utils.MinHeap;
+import com.example.ranzhang.myapplication.Utils.Pair;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends Activity implements SensorEventListener, OnChartValueSelectedListener, View.OnClickListener {
 
@@ -32,11 +38,8 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
     private final int MEANFILTER = 2;
     private final int MEDIANFILTER = 3;
 
-    private double finalAcceleration = 0;
-
-    private final int num_Limit = 3;
-    private final int setIndex = 0;
-    private final int limit = 2;
+    private final int NUMlIMIT = 3;
+    private int COUNT = 0;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -49,7 +52,8 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
     private LineChart mChart;
     private ChartBLL chartbll;
 
-    private MinHeap<Double> minheap;
+    List<Pair<Float,Integer>> pairList = new ArrayList<Pair<Float,Integer>>();
+    private MinHeap<Pair<Float,Integer>> minheap;
 
 
     @Override
@@ -90,7 +94,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
     private void initData() {
 
         chartbll = new ChartBLL(mChart, this);
-        minheap = new MinHeap<Double>();
+        minheap = new MinHeap<Pair<Float,Integer>>();
 
         meanFilterAccelSmoothing = new MeanFilterSmoothing();
         medianFilterAccelSmoothing = new MedianFilterSmoothing();
@@ -116,19 +120,23 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
     @Override
     public void onSensorChanged(SensorEvent event) {
         float[] acceleration;
-        chartbll.addEntry(calculateAccelrate(event.values), ORIGIN);
+        chartbll.addEntry(calculateAcceleration(event.values), ORIGIN);
 
         acceleration = lpfAccelSmoothing.addSamples(event.values);
-        chartbll.addEntry(calculateAccelrate(acceleration), LOWPASSFILTER);
+        float finalAcceleration = calculateAcceleration(acceleration);
+        chartbll.addEntry(finalAcceleration, LOWPASSFILTER);
 
-        acceleration = meanFilterAccelSmoothing.addSamples(event.values);
-        chartbll.addEntry(calculateAccelrate(acceleration), MEANFILTER);
-
-        acceleration = medianFilterAccelSmoothing.addSamples(event.values);
-        chartbll.addEntry(calculateAccelrate(acceleration), MEDIANFILTER);
+        Pair<Float, Integer> newPair = new Pair<Float, Integer>(finalAcceleration, COUNT++);
+        pairList.add(newPair);
+        addToMinheap(newPair);
+//        acceleration = meanFilterAccelSmoothing.addSamples(event.values);
+//        chartbll.addEntry(calculateAcceleration(acceleration), MEANFILTER);
+//
+//        acceleration = medianFilterAccelSmoothing.addSamples(event.values);
+//        chartbll.addEntry(calculateAcceleration(acceleration), MEDIANFILTER);
     }
 
-    private float calculateAccelrate(float[] acceleration) {
+    private float calculateAcceleration(float[] acceleration) {
         if(acceleration.length != 3) {
             return 0;
         }
@@ -139,7 +147,6 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
 
     @Override
     public void onValueSelected(Entry e, int dataSetIndex, Highlight h) {
-//        Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -147,20 +154,20 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
 
     }
 
-    private void filter(Double a) {
-        if (minheap == null) {
+    private void addToMinheap(Pair<Float, Integer> newPair) {
+        if (newPair == null || minheap == null) {
             return;
         }
 
-        if (minheap.getSize() >= num_Limit) {
-            if (a < minheap.minValue()) {
+        if (minheap.getSize() >= NUMlIMIT) {
+            if (newPair.compareTo(minheap.minValue()) <= 0) {
                 return;
             } else {
                 minheap.remove();
             }
         }
 
-        minheap.add(a);
+        minheap.add(newPair);
     }
 
     @Override
@@ -171,15 +178,60 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
                 break;
             case R.id.btn_2:
                 sensorManager.unregisterListener(this);
+//                printMinHeap();
+                analyseData(minheap);
                 break;
             case R.id.btn_3:
-                chartbll.clearData();
+                clearData();
                 break;
             default:
                 break;
         }
     }
 
+    private void printMinHeap() {
+        int size = minheap.getSize();
+        for (int i = 0; i < size; i++) {
+            Pair<Float, Integer> pair = minheap.minValue();
+            System.out.print(pair.getFirstKey() + " : " + pair.getSecondKey() + "\n");
+            minheap.remove();
+        }
+    }
+
+    private void analyseData(MinHeap min) {
+        List<Pair<Float, Integer>> data = min.getValues();
+        List<Integer> indexs = getIndexs(data);
+
+        final Pair<Float, Integer> pivot_min = new Pair<Float, Integer>(Float.MAX_VALUE, -1);
+        int firstLowIndex = ListUtil.findMin(indexs.get(0), indexs.get(1), pairList, pivot_min).getSecondKey();
+        int secondLowIndex = ListUtil.findMin(indexs.get(1), indexs.get(2), pairList, pivot_min).getSecondKey();
+
+        System.out.print("firstLowIndex = " + firstLowIndex + "\n");
+        System.out.print("secondLowIndex = " + secondLowIndex + "\n");
+        System.out.print("Interval = " + (secondLowIndex - firstLowIndex));
+    }
+
+    private List<Integer> getIndexs(List<Pair<Float, Integer>> data) {
+        if (data == null) {
+            return null;
+        }
+
+        List<Integer> res = new ArrayList<Integer>();
+
+        for (int i = 0; i < data.size(); i++) {
+            res.add(data.get(i).getSecondKey());
+        }
+        Collections.sort(res);
+        return res;
+    }
+
+
+    private void clearData() {
+        chartbll.clearData();
+        COUNT = 0;
+        minheap.clear();
+        pairList.clear();
+    }
 
     private float getPrefMeanFilterSmoothingTimeConstant()
     {
@@ -199,7 +251,7 @@ public class MainActivity extends Activity implements SensorEventListener, OnCha
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        return Float.valueOf(prefs.getString("lowPass", "0.5"));
+        return Float.valueOf(prefs.getString("lowPass", "0.2"));
     }
 
 }

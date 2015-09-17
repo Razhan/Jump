@@ -3,7 +3,6 @@ package com.example.ranzhang.myapplication.Business;
 import android.content.Context;
 import android.graphics.Color;
 
-import com.example.ranzhang.myapplication.Activities.MainActivity;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -55,17 +54,12 @@ public class ChartBLL {
 
         ArrayList<String> xVals = new ArrayList<String>();
 
-        LineDataSet set_origin = addDataSet(ColorTemplate.getHoloBlue(), "Origin");
-        LineDataSet set_lowpass = addDataSet(ColorTemplate.JOYFUL_COLORS[0], "LowPass");
-        LineDataSet set_mean = addDataSet(ColorTemplate.JOYFUL_COLORS[1], "Mean");
-        LineDataSet set_median = addDataSet(ColorTemplate.JOYFUL_COLORS[3], "Median");
-
-
         ArrayList<LineDataSet> dataSets = new ArrayList<LineDataSet>();
-        dataSets.add(set_origin);
-        dataSets.add(set_lowpass);
-        dataSets.add(set_mean);
-        dataSets.add(set_median);
+
+        addDataSet(ColorTemplate.getHoloBlue(), "Origin", dataSets);
+        addDataSet(ColorTemplate.JOYFUL_COLORS[0], "LowPass", dataSets);
+//        addDataSet(ColorTemplate.JOYFUL_COLORS[1], "Mean", dataSets);
+//        addDataSet(ColorTemplate.JOYFUL_COLORS[3], "Median", dataSets);
 
         LineData data = new LineData(xVals, dataSets);
         data.setValueTextColor(Color.WHITE);
@@ -74,7 +68,7 @@ public class ChartBLL {
         mChart.setData(data);
     }
 
-    private LineDataSet addDataSet(int color, String description) {
+    private void addDataSet(int color, String description, ArrayList<LineDataSet> dataSets) {
         ArrayList<Entry> yVals = new ArrayList<Entry>();
         LineDataSet set = new LineDataSet(yVals, description);
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
@@ -86,7 +80,7 @@ public class ChartBLL {
         set.setDrawValues(false);
         set.setHighlightEnabled(false);
 
-        return set;
+        dataSets.add(set);
     }
 
     public void addEntry(float a, int index) {

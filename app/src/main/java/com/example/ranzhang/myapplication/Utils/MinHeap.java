@@ -1,4 +1,4 @@
-package com.example.ranzhang.myapplication.Business;
+package com.example.ranzhang.myapplication.Utils;
 
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
@@ -107,5 +107,13 @@ public class MinHeap<E extends Comparable<? super E>>  {
             System.out.print(i + " ");
         }
         System.out.println();
+    }
+
+    public void clear() {
+        values.clear();
+    }
+
+    public ArrayList<E> getValues() {
+        return values;
     }
 }

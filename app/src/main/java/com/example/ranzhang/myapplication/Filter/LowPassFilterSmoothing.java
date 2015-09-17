@@ -47,7 +47,7 @@ public class LowPassFilterSmoothing
 	private float timestamp = System.nanoTime();
 	private float startTime = 0;
 
-	private int count = 0;
+	private int count = 1;
 
 	// Gravity and linear accelerations components for the
 	// Wikipedia low-pass filter
@@ -86,15 +86,12 @@ public class LowPassFilterSmoothing
 		dt = 1 / (count++ / ((timestamp - startTime) / 1000000000.0f));
 
 		alpha = timeConstant / (timeConstant + dt);
-//        alpha = 0.2f;
-//		Log.d(TAG, Float.toString(alpha));
+//        Log.d(TAG, Float.toString(dt));
+//        Log.d(TAG, Float.toString(alpha));
 
-		if (count > 5)
-		{
-			output[0] = alpha * output[0] + (1 - alpha) * input[0];
-			output[1] = alpha * output[1] + (1 - alpha) * input[1];
-			output[2] = alpha * output[2] + (1 - alpha) * input[2];
-		}
+        output[0] = alpha * output[0] + (1 - alpha) * input[0];
+        output[1] = alpha * output[1] + (1 - alpha) * input[1];
+        output[2] = alpha * output[2] + (1 - alpha) * input[2];
 
 		return output;
 	}
